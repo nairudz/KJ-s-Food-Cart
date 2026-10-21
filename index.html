@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kenneth Jay's Fun Food Carts!</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- BACKGROUND: put your picture at public/background.png -->
+<img class="bg-img" src="background.png" alt="" onerror="this.remove()">
+
+<header>
+  <div class="bar">
+    <a class="logo" href="#top"><b>🍦</b><span>Kenneth Jay's<br>Fun Food Carts!</span></a>
+    <div class="actions">
+      <button class="cart-btn" onclick="openCart()" aria-label="Open cart">🛒 <b id="cartCount">0</b></button>
+      <button id="burger" class="burger" aria-label="Menu" aria-expanded="false" onclick="toggleMenu(event)"><i></i><i></i><i></i></button>
+    </div>
+  </div>
+  <div class="bunting"></div>
+  <nav id="menu" class="menu hidden">
+    <a href="#boxes" onclick="toggleMenu()">🎪 Pick a cart</a>
+    <button onclick="toggleMenu();openCart()">🛒 My cart</button>
+    <button onclick="toggleMenu();openAbout()">🍦 About us</button>
+    
+    <!-- SOCIAL LINKS IN MENU -->
+    <div class="msoc" id="menuSocials">
+      <a href="https://www.facebook.com/messages/t/1169944669545793" target="_blank" rel="noopener noreferrer" title="Messenger" aria-label="Messenger"><i class="fa-brands fa-facebook-messenger"></i></a>
+      <a href="https://www.facebook.com/profile.php?id=61591633932849" target="_blank" rel="noopener noreferrer" title="Facebook" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+      <a href="https://www.instagram.com/sorbetesdavao.8000/" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      <a href="https://www.tiktok.com/@sorbetes.8000" target="_blank" rel="noopener noreferrer" title="TikTok" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+      <a href="tel:09619803328" title="Call Us" aria-label="Phone"><i class="fa-solid fa-phone"></i></a>
+      <a href="mailto:kennethjaymondonedo69@gmail.com" title="Email Us" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
+    </div>
+    
+    <a href="admin.html">🔑 Admin</a>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <h1>Let's make your party sweet!</h1>
+    <p>Mindanao's best! Sorbetes Davao. Tap a box to see packages and flavors.</p>
+  </section>
+
+  <div id="boxes"></div>
+  <section id="panel" class="panel hidden" aria-live="polite"></section>
+</main>
+
+<footer>
+  <p>Follow the fun</p>
+  
+  <!-- SOCIAL LINKS IN FOOTER -->
+  <div class="msoc" id="footSocials">
+    <a href="https://www.facebook.com/messages/t/1169944669545793" target="_blank" rel="noopener noreferrer" title="Messenger" aria-label="Messenger"><i class="fa-brands fa-facebook-messenger"></i></a>
+    <a href="https://www.facebook.com/profile.php?id=61591633932849" target="_blank" rel="noopener noreferrer" title="Facebook" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+    <a href="https://www.instagram.com/sorbetesdavao.8000/" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+    <a href="https://www.tiktok.com/@sorbetes.8000" target="_blank" rel="noopener noreferrer" title="TikTok" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+    <a href="tel:09619803328" title="Call Us" aria-label="Phone"><i class="fa-solid fa-phone"></i></a>
+    <a href="mailto:kennethjaymondonedo69@gmail.com" title="Email Us" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
+  </div>
+</footer>
+
+<div id="toast" class="toast hidden"></div>
+
+<!-- CART / CHECKOUT -->
+<div id="cartModal" class="modal hidden">
+  <div class="sheet">
+    <button class="x" onclick="closeCart()" aria-label="Close">✕</button>
+
+    <div id="step1">
+      <h2>🛒 Your cart</h2>
+      <div id="cartList"></div>
+      <p class="totalrow">Total <b id="cartTotal">₱0</b></p>
+      <button class="btn wide" id="toDetails" onclick="goStep(2)">Continue</button>
+    </div>
+
+    <form id="step2" class="hidden" onsubmit="submitOrder(event)">
+      <h2>🎈 Event details</h2>
+      <label>Your name<input id="cName" required maxlength="100" placeholder="Arbie Real"></label>
+      <label>Mobile number<input id="cPhone" type="tel" required pattern="[0-9+\s\-]{7,20}" placeholder="0912 345 6789"></label>
+      <label>Event name<input id="eName" required maxlength="150" placeholder="Elsa's 1st Birthday"></label>
+      <div class="two">
+        <label>Event date<input id="eDate" type="date" required onchange="checkDate(this.value)"></label>
+        <label>Event time<input id="eTime" type="time" required></label>
+      </div>
+      <p id="dateMsg" class="dmsg"></p>
+      <label>Instructions (venue, setup, allergies...)<textarea id="eNotes" rows="3" maxlength="1000" placeholder="Anything we should know?"></textarea></label>
+      <p id="formErr" class="dmsg bad"></p>
+      <div class="two">
+        <button type="button" class="btn ghost" onclick="goStep(1)">Back</button>
+        <button class="btn" id="toPay">Continue to payment</button>
+      </div>
+    </form>
+
+    <div id="step3" class="hidden center">
+      <h2 class="almost">Almost Done!</h2>
+      <p>To process your order, a downpayment is required.</p>
+      <p class="orderline">Order <b id="orderIdTxt"></b> · Total <b id="payTotal"></b></p>
+      <!-- QR: put your payment QR at public/qr.png -->
+      <div class="qrcard">
+        <div class="qrbox"><span>Scan QR Code</span><img src="qr.png" alt="Payment QR code" onerror="this.remove()"></div>
+        <p class="iwas">TO AVOID BOGUS</p>
+        <p class="amt">Amount: <b id="dpAmt"></b></p>
+      </div>
+      <div class="privacy">
+        <h4>For Customer's Care &amp; Privacy</h4>
+        <p>We require a downpayment before finalizing orders to avoid bogus or non-genuine purchases. Your personal details are safe with us and will only be used for fulfilling this event.</p>
+      </div>
+      <button class="btn green wide" onclick="confirmPaid()">I Have Sent the Downpayment</button>
+      <button class="linkbtn" onclick="closeCart()">Cancel</button>
+    </div>
+
+    <div id="step4" class="hidden center">
+      <h2>🎉 Downpayment sent!</h2>
+      <p>Last step: send your payment receipt to our Facebook page so we can confirm your order.</p>
+      <a id="fbHit" class="fbhit" href="https://www.facebook.com/messages/t/1169944669545793" target="_blank" rel="noopener noreferrer">
+        <i class="fa-brands fa-facebook-messenger"></i>
+        <span><b>Send receipt on Facebook</b><small>Tap here to open our page and confirm your order</small></span>
+      </a>
+      <p class="shotnote">📸 Screenshot the invoice below and send it to the admin on our Facebook page.</p>
+      <div id="invoice" class="invoice"></div>
+      <button class="btn ghost wide" onclick="closeCart()">Back to menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div id="aboutModal" class="modal hidden" onclick="if (event.target === this) closeAbout()">
+  <div class="sheet center">
+    <button class="x" onclick="closeAbout()" aria-label="Close">✕</button>
+    <h2>🍦 About us</h2>
+    <p class="about">Gemma and Michael Mondonedo started their ice cream business in 2006, naming it after their newborn son, Kenneth Jay. They initially sold ice cream in various public spaces, but today you can find them at the Roxas Night Market.</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
