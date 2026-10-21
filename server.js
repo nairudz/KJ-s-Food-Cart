@@ -34,10 +34,14 @@ const app = express();
 app.use(express.json({ limit: '100kb' }));
 app.use(express.static(__dirname));
 
-// --- Root Route (Fixes "Cannot GET /") ---
+// --- HTML Routes ---
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
-  });
+});
+
+app.get('/admin.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
 
 // --- Admin auth (token in memory, 8 hours) -------------------------------------
 const tokens = new Map();

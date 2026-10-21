@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Portal - KJ's Food Carts</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 20px; background: #f4f6f8; color: #333; }
+  .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  h1, h2 { margin-top: 0; color: #222; }
+  .hidden { display: none !important; }
+  .btn { padding: 10px 16px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+  .btn:hover { background: #0056b3; }
+  .btn-danger { background: #dc3545; }
+  .btn-danger:hover { background: #bd2130; }
+  .btn-sm { padding: 6px 12px; font-size: 0.85rem; }
+  input, select { padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+  .login-box input { width: 100%; margin-bottom: 12px; }
+  
+  .nav-tabs { display: flex; gap: 10px; border-bottom: 2px solid #e9ecef; margin-bottom: 20px; }
+  .tab-btn { padding: 10px 20px; border: none; background: none; font-size: 1rem; font-weight: bold; cursor: pointer; color: #6c757d; }
+  .tab-btn.active { color: #007bff; border-bottom: 3px solid #007bff; margin-bottom: -2px; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th, td { border: 1px solid #e9ecef; padding: 12px; text-align: left; }
+  th { background: #f8f9fa; font-weight: 600; }
+  
+  .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+  .badge-product { background: #e3f2fd; color: #0d47a1; }
+  .badge-flavor { background: #f3e5f5; color: #4a148c; }
+  
+  .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 22px; }
+  .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+  input:checked + .slider { background-color: #28a745; }
+  input:checked + .slider:before { transform: translateX(22px); }
+
+  .qty-input { width: 80px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- LOGIN SECTION -->
+  <div id="loginView" class="login-box" style="max-width: 400px; margin: 40px auto;">
+    <h1>🔑 Admin Login</h1>
+    <form onsubmit="login(event)">
+      <label>Password</label>
+      <input type="password" id="password" required placeholder="Enter password">
+      <p id="loginErr" style="color: red; font-size: 0.9rem;"></p>
+      <button type="submit" class="btn" style="width: 100%;">Login</button>
+    </form>
+  </div>
+
+  <!-- DASHBOARD SECTION -->
+  <div id="dashView" class="hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h1>🍦 KJ Food Carts Dashboard</h1>
+      <button onclick="logout()" class="btn btn-danger btn-sm">Logout</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('inventory')">📦 Inventory & Flavors</button>
+      <button class="tab-btn" onclick="switchTab('orders')">📋 Orders List</button>
+    </div>
+
+    <!-- INVENTORY TAB -->
+    <div id="inventoryTab">
+      <h2>Manage Products & Flavors</h2>
+      <p style="color: #666; font-size: 0.9rem;">Toggle items ON/OFF or change stock quantities. Disabled or zero-quantity items will be marked as sold out on the store page.</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Item / Flavor</th>
+            <th>Stock Quantity</th>
+            <th>Available</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryList"></tbody>
+      </table>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div id="ordersTab" class="hidden">
+      <h2>Customer Orders</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Event Info</th>
+            <th>Total</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="ordersList"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  let token = localStorage.getItem('adminToken');
+
+  if (token) showDashboard();
+
+  async function login(e) {
+    e.preventDefault();
+    const password = document.getElementById('password').value;
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      token = data.token;
+      localStorage.setItem('adminToken', token);
+      showDashboard();
+    } else {
+      document.getElementById('loginErr').textContent = data.error || 'Login failed';
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('adminToken');
+    location.reload();
+  }
+
+  function showDashboard() {
+    document.getElementById('loginView').classList.add('hidden');
+    document.getElementById('dashView').classList.remove('hidden');
+    loadInventory();
+    loadOrders();
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (tab === 'inventory') {
+      document.querySelectorAll('.tab-btn')[0].classList.add('active');
+      document.getElementById('inventoryTab').classList.remove('hidden');
+      document.getElementById('ordersTab').classList.add('hidden');
+    } else {
+      document.querySelectorAll('.tab-btn')[1].classList.add('active');
+      document.getElementById('inventoryTab').classList.add('hidden');
+      document.getElementById('ordersTab').classList.remove('hidden');
+    }
+  }
+
+  // --- INVENTORY MANAGEMENT ---
+  async function loadInventory() {
+    const res = await fetch('/api/admin/inventory', {
+      headers: { 'x-admin-token': token }
+    });
+    if (res.status === 401) return logout();
+    const items = await res.json();
+    
+    const tbody = document.getElementById('inventoryList');
+    tbody.innerHTML = items.map(item => `
+      <tr>
+        <td>
+          <span class="badge ${item.itemType === 'product' ? 'badge-product' : 'badge-flavor'}">
+            ${item.itemType === 'product' ? 'Product' : 'Flavor'}
+          </span>
+        </td>
+        <td><b>${item.label || item.itemKey}</b></td>
+        <td>
+          <input type="number" class="qty-input" id="qty-${item.itemKey}" value="${item.quantity}" min="0" max="100000">
+        </td>
+        <td>
+          <label class="switch">
+            <input type="checkbox" id="en-${item.itemKey}" ${item.isEnabled ? 'checked' : ''}>
+            <span class="slider"></span>
+          </label>
+        </td>
+        <td>
+          <button class="btn btn-sm" onclick="saveItem('${item.itemKey}')">Save</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function saveItem(itemKey) {
+    const quantity = parseInt(document.getElementById(`qty-${itemKey}`).value, 10);
+    const isEnabled = document.getElementById(`en-${itemKey}`).checked;
+
+    const res = await fetch('/api/admin/inventory', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-token': token
+      },
+      body: JSON.stringify({ itemKey, quantity, isEnabled })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert('Saved successfully!');
+    } else {
+      alert('Failed to save item update.');
+    }
+  }
+
+  // --- ORDERS MANAGEMENT ---
+  async function loadOrders() {
+    const res = await fetch('/api/admin/orders', {
+      headers: { 'x-admin-token': token }
+    });
+    if (res.status === 401) return logout();
+    const orders = await res.json();
+    const tbody = document.getElementById('ordersList');
+    tbody.innerHTML = orders.map(o => `
+      <tr>
+        <td><b>${o.id}</b></td>
+        <td>${o.name}<br><small>${o.phone}</small></td>
+        <td><b>${o.eventName}</b><br><small>${o.eventDate} @ ${o.eventTime}</small></td>
+        <td>₱${Number(o.total).toLocaleString()}</td>
+        <td>
+          <select onchange="updateStatus('${o.id}', this.value)">
+            ${['Pending Payment', 'Payment Submitted', 'Confirmed', 'Cancelled'].map(s => 
+              `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`
+            ).join('')}
+          </select>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  async function updateStatus(orderId, status) {
+    await fetch('/api/admin/orders', {
+      method: 'PATCH',
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-admin-token': token 
+      },
+      body: JSON.stringify({ orderId, status })
+    });
+  }
+</script>
+</body>
+</html>

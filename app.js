@@ -1,10 +1,11 @@
 // ---------- SETTINGS YOU CAN EDIT ----------
-const SOCIALS = [  // replace the links with your real ones
-  { name: 'Facebook',  icon: 'fa-brands fa-facebook-f',        url: 'https://facebook.com/YOUR_PAGE' },
-  { name: 'Instagram', icon: 'fa-brands fa-instagram',         url: 'https://instagram.com/YOUR_PAGE' },
-  { name: 'TikTok',    icon: 'fa-brands fa-tiktok',            url: 'https://tiktok.com/@YOUR_PAGE' },
-  { name: 'Messenger', icon: 'fa-brands fa-facebook-messenger',url: 'https://m.me/YOUR_PAGE' },
-  { name: 'Call us',   icon: 'fa-solid fa-phone',              url: 'tel:+639000000000' }
+const SOCIALS = [  
+  { name: 'Facebook',  icon: 'fa-brands fa-facebook-f',         url: 'https://www.facebook.com/profile.php?id=61591633932849' },
+  { name: 'Instagram', icon: 'fa-brands fa-instagram',          url: 'https://www.instagram.com/sorbetesdavao.8000/' },
+  { name: 'TikTok',    icon: 'fa-brands fa-tiktok',             url: 'https://www.tiktok.com/@sorbetes.8000' },
+  { name: 'Messenger', icon: 'fa-brands fa-facebook-messenger', url: 'https://www.facebook.com/messages/t/1169944669545793' },
+  { name: 'Call us',   icon: 'fa-solid fa-phone',               url: 'tel:09619803328' },
+  { name: 'Email us',  icon: 'fa-solid fa-envelope',            url: 'mailto:kennethjaymondonedo69@gmail.com' }
 ];
 const DOWNPAYMENT = 500; // downpayment shown on the QR screen
 const FB_URL = (SOCIALS.find(s => s.name === 'Messenger') || {}).url; // where customers send their receipt
@@ -67,8 +68,7 @@ const socHTML = SOCIALS.map(s => `<a class="soc" href="${s.url}" ${s.url.startsW
 $('menuSocials').innerHTML = socHTML; $('footSocials').innerHTML = socHTML;
 function toggleMenu(e) {
   if (e) e.stopPropagation();
-  const m = $('menu'); m.classList.toggle('hidden');
-  $('burger').setAttribute('aria-expanded', !m.classList.contains('hidden'));
+  const m = $('menu'); m.classList.toggle('hidden');$('burger').setAttribute('aria-expanded', !m.classList.contains('hidden'));
 }
 document.addEventListener('click', e => { if (!$('menu').classList.contains('hidden') && !$('menu').contains(e.target)) toggleMenu(); });
 
@@ -85,8 +85,7 @@ function pick(k) {
   if (!k || S.key === k) { S.key = null; $('panel').classList.add('hidden'); return renderBoxes(); }
   S = { key: k, pk: 0, fl: [], qty: 100 };
   renderBoxes(); renderPanel();
-  $('panel').classList.remove('hidden');
-  $('panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('panel').classList.remove('hidden');$('panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
   pop({ particleCount: 35, spread: 60, origin: { y: .5 } });
 }
 
@@ -144,7 +143,7 @@ function renderCart() {
   $('cartList').innerHTML = cart.length ? cart.map((i, n) => `<div class="line"><div><b>${esc(i.name)}</b>${i.flavors.length ? `<small>${esc(i.flavors.join(', '))}</small>` : ''}</div>
     <span>${peso(i.price)}</span><button class="rm" onclick="rm(${n})" aria-label="Remove">🗑</button></div>`).join('')
     : '<p class="empty">Your cart is empty. Tap a box to start your party order!</p>';
-  $('cartTotal').textContent = peso(total); $('toDetails').disabled = !cart.length;
+  $('cartTotal').textContent = peso(total);$('toDetails').disabled = !cart.length;
   $('cartCount').textContent = cart.length;
 }
 function rm(n) { cart.splice(n, 1); renderCart(); }
@@ -155,7 +154,7 @@ function goStep(n) {
 }
 
 async function checkDate(v) {
-  const m = $('dateMsg'), b = $('toPay');
+  const m = $('dateMsg'), b =$('toPay');
   m.className = 'dmsg'; m.textContent = '';
   if (!v) return;
   try {
@@ -171,9 +170,9 @@ async function checkDate(v) {
 async function submitOrder(e) {
   e.preventDefault();
   if (dateFull || !cart.length) return;
-  $('formErr').textContent = ''; $('toPay').disabled = true;
-  const details = { customerName: $('cName').value.trim(), phone: $('cPhone').value.trim(), eventName: $('eName').value.trim(),
-    eventDate: $('eDate').value, eventTime: $('eTime').value, instructions: $('eNotes').value.trim() };
+  $('formErr').textContent = '';$('toPay').disabled = true;
+  const details = { customerName: $('cName').value.trim(), phone: $('cPhone').value.trim(), eventName:$('eName').value.trim(),
+    eventDate: $('eDate').value, eventTime: $('eTime').value, instructions:$('eNotes').value.trim() };
   let id = '', total = cart.reduce((s, i) => s + i.price, 0);
   try {
     const res = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
@@ -191,8 +190,7 @@ async function submitOrder(e) {
   if (!id) id = 'ORD-' + (100000 + Math.floor(Math.random() * 900000));
   lastOrder = { id, total, ...details, issued: new Date(),
     items: cart.map(i => ({ name: i.name, flavors: [...i.flavors], price: i.price })) };
-  $('orderIdTxt').textContent = id; $('payTotal').textContent = peso(total);
-  $('dpAmt').textContent = peso2(Math.min(DOWNPAYMENT, total));
+  $('orderIdTxt').textContent = id; $('payTotal').textContent = peso(total);$('dpAmt').textContent = peso2(Math.min(DOWNPAYMENT, total));
   goStep(3); pop();
   if (!dateFull) $('toPay').disabled = false;
 }
@@ -238,7 +236,7 @@ async function confirmPaid() {
   try { await fetch(`/api/orders/${lastOrder.id}/paid`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reference: '' }) }); } catch (_) {}
   $('invoice').innerHTML = buildInvoice(lastOrder);
   if (FB_URL) $('fbHit').href = FB_URL;
-  cart = []; renderCart(); $('step2').reset(); $('dateMsg').textContent = '';
+  cart = []; renderCart(); $('step2').reset();$('dateMsg').textContent = '';
   goStep(4); pop({ particleCount: 250, spread: 140 }); setTimeout(() => pop({ particleCount: 150, angle: 60, origin: { x: 0, y: .7 } }), 300);
   setTimeout(() => pop({ particleCount: 150, angle: 120, origin: { x: 1, y: .7 } }), 300);
 }
